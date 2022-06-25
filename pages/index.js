@@ -7,7 +7,7 @@ import LocationOnIcon from '@material-ui/icons/LocationOn';
 import { withStyles } from '@material-ui/core/styles';
 import { green } from '@material-ui/core/colors';
 import Radio from '@material-ui/core/Radio';
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import RadioGroup from '@material-ui/core/RadioGroup';
 import FormControlLabel from '@material-ui/core/FormControlLabel';
 
@@ -129,6 +129,40 @@ const Index = () => {
     }
   }
 
+  const [data, setData] = useState(null)
+
+
+  var groupBy = function (xs, key) {
+    return xs.reduce(function (rv, x) {
+      (rv[x[key]] = rv[x[key]] || []).push(x);
+      return rv;
+    }, {});
+  };
+
+  useEffect(() => {
+    try {
+      (async () => {
+        const axios = require("axios").default;
+
+        const options = {
+          method: 'GET',
+          url: 'https://app-staging.weco-dev.com/api/sample'
+        };
+
+        axios.request(options).then(function (response) {
+          let grouped = groupBy(response.data, 'day')
+          setData(grouped)
+          console.log(grouped);
+
+        }).catch(function (error) {
+          console.error(error);
+        });
+      })();
+    } catch (err) {
+      console.log(err)
+    }
+  }, [])
+
   return (
     <Layout
       // type your page title and page description.
@@ -148,50 +182,61 @@ const Index = () => {
           </Box>
           <Typography className={classes.quantity}>Quantity</Typography>
         </Box>
-        <Box display='flex' alignItems='center' mt='40px' mb='20px'>
-          <Box display='flex'>
-            <Box className={classes.calendar}>
-              M
-            </Box>
-            <Typography className={classes.dates}>
-              Monday - 06/27
-            </Typography>
-          </Box>
-          <Box ml='30px'>
-            <RadioGroup style={{ flexDirection: 'row' }} defaultValue="" aria-label="gender" name="customized-radios">
-              <FormControlLabel value="pickup" control={<GreenRadio />} label="Pickup" />
-              <FormControlLabel value="delivery" control={<GreenRadio />} label="Delivery" />
-            </RadioGroup>
-          </Box>
-        </Box>
-        <Box borderBottom='1px solid #ADA29A'>
-          {
-            [1, 2].map(elem => (
-              <Grid container key={elem} style={{ padding: '20px 0', alignItems: 'center' }}>
-                <Grid item md={8}>
-                  <Typography>
-                    <span className={classes.strongTitle}>duck confit </span>lemon + peppercorn cured duck leg confit in duck fat; cherry gastrique; blistered green beans with Calabrian chili and fried garlic; duck fat roasted potatoes (ingredients ~$12)
-                  </Typography>
-                </Grid>
-                <Grid item md={4}>
-                  <Box display='flex' justifyContent='end'>
-                    <Box style={{
-                      width: '120px',
-                      display: "grid",
-                      gridTemplateColumns: "1fr 1fr 1fr",
-                      gap: "10px",
-                      color: "#000",
-                    }}>
-                      <Button onClick={minus} className={classes.minPlusBtn}>-</Button>
-                      <Typography style={{ margin: '0 10px', fontSize: '20px', textAlign: 'center' }}>{count}</Typography>
-                      <Button onClick={plus} className={classes.minPlusBtn}>+</Button>
+        {
+          data && Object.keys(data).map((k, idx) => {
+            return (
+              <Box key={idx}>
+                <Box display='flex' alignItems='center' mt='40px' mb='20px'>
+                  <Box display='flex'>
+                    <Box className={classes.calendar}>
+                      {data[k][0].day}
                     </Box>
+                    <Typography className={classes.dates}>
+                      Monday - 06/27
+                    </Typography>
                   </Box>
-                </Grid>
-              </Grid>
-            ))
-          }
-        </Box>
+                  <Box ml='30px'>
+                    <RadioGroup style={{ flexDirection: 'row' }} defaultValue="" aria-label="gender" name="customized-radios">
+                      <FormControlLabel value="pickup" control={<GreenRadio />} label="Pickup" />
+                      <FormControlLabel value="delivery" control={<GreenRadio />} label="Delivery" />
+                    </RadioGroup>
+                  </Box>
+                </Box>
+                <Box borderBottom='1px solid #ADA29A'>
+                  {
+                    data[k].map((elem, idx) => (
+                      <Grid key={idx} container style={{ padding: '20px 0', alignItems: 'center' }}>
+                        <Grid item md={8}>
+                          <Typography>
+                            <span className={classes.strongTitle}>{elem.item.name}</span>
+                            <span dangerouslySetInnerHTML={{ __html: elem.item.description }}>
+                            </span>
+                          </Typography>
+                          {/* <span className={classes.strongTitle}>duck confit </span>lemon + peppercorn cured duck leg confit in duck fat; cherry gastrique; blistered green beans with Calabrian chili and fried garlic; duck fat roasted potatoes (ingredients ~$12) */}
+                        </Grid>
+                        <Grid item md={4}>
+                          <Box display='flex' justifyContent='end'>
+                            <Box style={{
+                              width: '120px',
+                              display: "grid",
+                              gridTemplateColumns: "1fr 1fr 1fr",
+                              gap: "10px",
+                              color: "#000",
+                            }}>
+                              <Button onClick={minus} className={classes.minPlusBtn}>-</Button>
+                              <Typography style={{ margin: '0 10px', fontSize: '20px', textAlign: 'center' }}>{count}</Typography>
+                              <Button onClick={plus} className={classes.minPlusBtn}>+</Button>
+                            </Box>
+                          </Box>
+                        </Grid>
+                      </Grid>
+                    ))
+                  }
+                </Box>
+              </Box>
+            )
+          })
+        }
         <Box display='flex' justifyContent='center'>
           <Button className={classes.addBag}>ADD TO BAG</Button>
         </Box>
