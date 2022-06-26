@@ -111,9 +111,6 @@ const Index = () => {
   const classes = useStyles();
   const [selectedValue, setSelectedValue] = useState('a');
 
-  const handleChange = (event) => {
-    setSelectedValue(event.target.value);
-  };
 
   const [count, setCount] = useState(1);
 
@@ -131,9 +128,10 @@ const Index = () => {
 
   const [data, setData] = useState(null)
 
+  const [days, setDays] = useState(['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'])
 
-  var groupBy = function (xs, key) {
-    return xs.reduce(function (rv, x) {
+  const groupBy = (xs, key) => {
+    return xs.reduce((rv, x) => {
       (rv[x[key]] = rv[x[key]] || []).push(x);
       return rv;
     }, {});
@@ -150,7 +148,7 @@ const Index = () => {
         };
 
         axios.request(options).then(function (response) {
-          let grouped = groupBy(response.data, 'day')
+          let grouped = groupBy(response.data, 'day_of_week')
           setData(grouped)
           console.log(grouped);
 
@@ -189,10 +187,10 @@ const Index = () => {
                 <Box display='flex' alignItems='center' mt='40px' mb='20px'>
                   <Box display='flex'>
                     <Box className={classes.calendar}>
-                      {data[k][0].day}
+                      {days[idx + 1].charAt(0)}
                     </Box>
                     <Typography className={classes.dates}>
-                      Monday - 06/27
+                      {days[idx + 1]} - 06/27
                     </Typography>
                   </Box>
                   <Box ml='30px'>
